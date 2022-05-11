@@ -1,0 +1,8 @@
+S -> 'there' VP
+NP -> N 
+VP -> V NP
+V -> 'is'
+NP -> Det N_OBJ
+Det -> 'a'
+N_OBJ -> SCALE OBJECT_HUE SHAPE LOC
+LOC -> ORIENTATION 'in front of a' WALL_HUE 'wall on' FLOOR_HUE 'floor'

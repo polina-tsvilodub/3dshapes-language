@@ -1,4 +1,7 @@
 S -> 'there' VP
+S -> NP
+S -> 'the picture shows' NP
+S -> Det SCALE OBJECT 'is' ORIENTATION 'in front of a' WALL_HUE 'wall on' FLOOR_HUE 'floor'
 NP -> N 
 VP -> V NP
 V -> 'is'

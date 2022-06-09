@@ -1,7 +1,14 @@
 S -> 'there' VP
 S -> NP
 S -> 'the picture shows' NP
-S -> Det SCALE OBJECT 'is' ORIENTATION 'in front of a' WALL_HUE 'wall on' FLOOR_HUE 'floor'
+S -> Det SCALE OBJECT_HUE OBJECT 'is standing' ORIENTATION 'in front of a' WALL_HUE 'wall on' FLOOR_HUE 'floor'
+S -> Det SCALE OBJECT_HUE OBJECT 'is standing' ORIENTATION 'on' FLOOR_HUE 'floor in front of a' WALL_HUE
+S -> Det SCALE OBJECT_HUE OBJECT 'is' ORIENTATION 'in front of a' WALL_HUE 'wall on' FLOOR_HUE 'floor'
+S -> Det SCALE OBJECT_HUE OBJECT 'is on' FLOOR_HUE 'floor' ORIENTATION 'in front of a' WALL_HUE 'wall'
+S -> Det SCALE OBJECT_HUE OBJECT 'is standing on' FLOOR_HUE 'floor' ORIENTATION 'in front of a' WALL_HUE 'wall' 
+S -> Det SCALE OBJECT_HUE OBJECT 'is on' FLOOR_HUE 'floor in front of a' WALL_HUE 'wall' ORIENTATION
+S -> 'the' SCALE SHAPE LOC 'is' OBJECT_HUE
+S -> 'the' OBJECT_HUE SHAPE LOC 'is' SCALE
 NP -> N 
 VP -> V NP
 V -> 'is'
@@ -9,3 +16,6 @@ NP -> Det N_OBJ
 Det -> 'a'
 N_OBJ -> SCALE OBJECT_HUE SHAPE LOC
 LOC -> ORIENTATION 'in front of a' WALL_HUE 'wall on' FLOOR_HUE 'floor'
+LOC -> ORIENTATION 'on' FLOOR_HUE 'floor in front of a' WALL_HUE 'wall' 
+LOC -> 'on' FLOOR_HUE 'floor' ORIENTATION 'in front of a' WALL_HUE 'wall'
+LOC -> 'on' FLOOR_HUE 'floor in front of a' WALL_HUE 'wall' ORIENTATION

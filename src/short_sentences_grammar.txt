@@ -1,0 +1,17 @@
+S -> 'there' VP
+S -> Det N_OBJ
+S -> 'the' SHAPE 'is' LOC
+S -> 'the' SHAPE 'is' SCALE
+S -> 'the' SHAPE 'is' OBJECT_HUE
+VP -> V NP
+V -> 'is'
+NP -> Det N_OBJ
+Det -> 'a'
+N_OBJ -> SCALE SHAPE
+N_OBJ -> OBJECT_HUE SHAPE
+N_OBJ -> SHAPE LOC
+N_OBJ -> SCALE SHAPE LOC
+N_OBJ -> OBJECT_HUE SHAPE LOC
+LOC -> ORIENTATION
+LOC -> 'in front of a' WALL_HUE 'wall'
+LOC -> 'on' FLOOR_HUE 'floor'

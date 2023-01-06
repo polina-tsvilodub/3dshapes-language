@@ -1,5 +1,4 @@
 *.csv
 *.json
-*.pt
 *.png
 src/.ipynb_checkpoints/

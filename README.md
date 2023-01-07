@@ -40,8 +40,8 @@ The sandbox dataset is provided alongside with an entrypoint script `sandbox/img
 * loading the full 3Dshapes dataset. **WARNING**: this will require large downloads and will create large files on your hard drive (will require app. 13GB space).
     * in order to do this, you will need to *manually* download the following files into the `sandbox/data` directory. **IMPORTANT**: do NOT modify the names of the downloaded files.
         * the full set of ResNet image features [here](https://drive.google.com/file/d/1OZ7a2xoMK9uF5akMpEo7fQee3J3QeQ3F/view?usp=share_link)
-        * the long captions file [here](https://drive.google.com/file/d/1aqtP7b6FudpG9zvq5xkFp8hTOpInzzRD/view?usp=share_link)
-        * the short captions file [here](https://drive.google.com/file/d/1mijOZCFY0nOTO9B_BVXIik3_UX1ElgCE/view?usp=share_link)
+        * the long captions file [here](https://drive.google.com/file/d/1lwxmF9FGteoSZ4dA483bOmItqlEFVLMZ/view?usp=share_link)
+        * the short captions file [here](https://drive.google.com/file/d/1rVk7b6IZ5unR-Oihjpf81xR-SCaRHEg_/view?usp=share_link)
         * the original 3Dshapes dataset, following the instruction [here](https://github.com/deepmind/3d-shapes)
     * navigate to `sandbox`. Set the flag `load_as_sandbox=False` in the last line of `sandbox/img2text_inference.py`. Run `python img2text_inference.py`.
 

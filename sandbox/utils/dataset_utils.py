@@ -113,6 +113,7 @@ class threeDshapes_Dataset(Dataset):
                 self.labels_short = self.sandbox_file["labels_short"]
 
         else:
+            print("Running on full ds")
             self.embedded_imgs = torch.load(os.path.join(path, "3dshapes_all_ResNet_features.pt")) 
             # load appropriate full datafiles
             self.images = np.load(
@@ -121,27 +122,21 @@ class threeDshapes_Dataset(Dataset):
             self.numeric_labels = np.load(
                 os.path.join(path, "3dshapes_labels.npy")
             )
-            with open(os.path.join(path, "3d_shapes_captions_long.json"), "r") as fp:
-                self.labels_long = json.load(fp)
-            with open(os.path.join(path, "3d_shapes_captions_short.json"), "r") as fp:
-                self.labels_short = json.load(fp)
+            with open(os.path.join(path, "3dshapes_captions_long.json"), "r") as fp:
+                self.labels_long = json.load(fp, object_hook=parse_int_keys)
+            with open(os.path.join(path, "3dshapes_captions_short.json"), "r") as fp:
+                self.labels_short = json.load(fp, object_hook=parse_int_keys)
             
-           
-        # TODO check that this is compatible with the full dataset
         # get the indices of the annotations (depending on the number of labels to use)
-        if load_as_sandbox:
-            if labels_type == "long":
-                labels_ids_flat = [list(np.random.choice(range(len(self.labels_long[0])), num_labels, replace=False)) for i in range(len(self.images))]
-                self.labels_flat = [self.labels_long[i][l] for i, sublst in enumerate(labels_ids_flat) for l in sublst]
-                self.img_ids_flat = [id for id in range(len(self.images)) for i in range(num_labels)]
-            else:
-                labels_ids_flat = [list(np.random.choice(range(len(self.labels_short[0])), num_labels, replace=False)) for i in range(len(self.images))]
-                self.labels_flat = [self.labels_short[i][l] for i, sublst in enumerate(labels_ids_flat) for l in sublst]
-                self.img_ids_flat = [i for id in range(len(self.images)) for id in range(num_labels)]
+        if labels_type == "long":
+            labels_ids_flat = [list(np.random.choice(range(len(self.labels_long[0])), num_labels, replace=False)) for i in range(len(self.images))]
+            self.labels_flat = [self.labels_long[i][l] for i, sublst in enumerate(labels_ids_flat) for l in sublst]
+            self.img_ids_flat = [id for id in range(len(self.images)) for i in range(num_labels)]
         else:
-            # TODO the exposed caption json files have to be recast to nested lists / dictionaries with numeric keys
-            raise NotImplementedError
-
+            labels_ids_flat = [list(np.random.choice(range(len(self.labels_short[0])), num_labels, replace=False)) for i in range(len(self.images))]
+            self.labels_flat = [self.labels_short[i][l] for i, sublst in enumerate(labels_ids_flat) for l in sublst]
+            self.img_ids_flat = [i for id in range(len(self.images)) for id in range(num_labels)]
+       
         print("len labels ids flat ", len(labels_ids_flat))
         print("len labels flat ", len(self.labels_flat), self.labels_flat[:5])
         print("len image ids flat ", len(self.img_ids_flat), self.img_ids_flat[:5])
@@ -243,6 +238,23 @@ class threeDshapes_Dataset(Dataset):
         else:
             return self.labels_short[self.img_ids_flat[id]]
 
+def parse_int_keys(dct):
+    """
+    Helper function for converting full caption json files into 
+    numeric keys for parsing with the same function as the sandbox.
+    """
+    rval = dict()
+    for key, val in dct.items():
+        try:
+            # Convert the key to an integer
+            int_key = int(key)
+            # Assign value to the integer key in the new dict
+            rval[int_key] = val
+        except ValueError:
+            # Couldn't convert key to an integer; Use original key
+            rval[key] = val
+    return rval
+
 def get_loader(
     path="data", 
     load_as_sandbox=True, # depending on this flag, check for existence of full dataset files
@@ -285,7 +297,7 @@ def get_loader(
         Pad token to be used for padding captions tp max_sequence_length.
     max_sequence_length: int
         Length to which all captions are padded / truncated.
-        
+
     Returns:
     --------
       data_loader: Torch DataLoader.

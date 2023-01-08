@@ -10,7 +10,7 @@ from utils.DecoderRNN import DecoderRNN
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-
+import argparse
 
 def main(path="data", run_inference=False, load_as_sandbox=True):
     """
@@ -42,7 +42,7 @@ def main(path="data", run_inference=False, load_as_sandbox=True):
     data_loader_test = get_loader(
         load_as_sandbox=load_as_sandbox,
         run_inference=run_inference,
-        num_labels=1
+        num_labels=1,
     )
 
     if torch.backends.mps.is_available():
@@ -51,6 +51,18 @@ def main(path="data", run_inference=False, load_as_sandbox=True):
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
+    # test if MPS device can be used with loaded package versions
+    if device == "mps":
+        tensor1 = torch.randn(3, 2)
+        tensor2 = torch.randn(3, 2)
+        tensor1 = tensor1.to(device)
+        tensor2 = tensor2.to(device)
+        try:
+            test_res = torch.mm(tensor1, tensor2)
+        except:
+            # if errors occur, switch back to cpu
+            print("Your current library and / or OS versions don't support inference on MPS, switching back to CPU")
+            device = "cpu"
 
     vocab_size = len(data_loader_test.dataset.vocab["word2idx"].keys())
     print("VOCAB: ", vocab_size)
@@ -99,7 +111,6 @@ def main(path="data", run_inference=False, load_as_sandbox=True):
 
     # for desired number of batches (should match the size of plot), run inference, build plot
     for i, id in enumerate(np.random.choice(len(data_loader_test.dataset), num_batches)):
-        print("ID ", id)
          
         # Create and assign a batch sampler to retrieve a batch with the sampled indices.
         new_sampler = torch.utils.data.sampler.SubsetRandomSampler(indices=[id])
@@ -108,8 +119,8 @@ def main(path="data", run_inference=False, load_as_sandbox=True):
         # get the batch
         target_img, target_features, target_lbl, numeric_lbl, target_caption = next(iter(data_loader_test)) 
         
-        print(target_img.shape)
-        print("All short captions for images ID ", id, data_loader_test.dataset.get_labels_for_image(id, caption_type='short'))
+        # print(target_img.shape)
+        # print("All short captions for images ID ", id, data_loader_test.dataset.get_labels_for_image(id, caption_type='short'))
         
         if run_inference:
             # move everything to device
@@ -146,5 +157,18 @@ def main(path="data", run_inference=False, load_as_sandbox=True):
 
 
 if __name__ ==  "__main__":
-    main("data", run_inference=False, load_as_sandbox=True)
+    # read in cmd args
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-p", "--path", help = "path to directory with sandbox and / or full data", nargs = "?", default = "data")
+    parser.add_argument("-ri", "--run_inference", help = "flag whether to sample image captions from trained LSTM", action="store_true", default = False)
+    parser.add_argument("-s", "--load_as_sandbox", help = "flag whether to use the sandboxed data (using full dataset otherwise)", action="store_true", default = True)
+    
+    args = parser.parse_args()
+
+    main(
+        path=args.path, 
+        run_inference=args.run_inference, 
+        load_as_sandbox=args.load_as_sandbox,
+    )
     

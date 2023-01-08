@@ -113,7 +113,6 @@ class threeDshapes_Dataset(Dataset):
                 self.labels_short = self.sandbox_file["labels_short"]
 
         else:
-            print("Running on full ds")
             self.embedded_imgs = torch.load(os.path.join(path, "3dshapes_all_ResNet_features.pt")) 
             # load appropriate full datafiles
             self.images = np.load(
@@ -203,7 +202,7 @@ class threeDshapes_Dataset(Dataset):
         tokens: list
             List of token IDs, prepended with start, end, padded to max length.
         """
-        label = label[:self.max_sequence_length]
+        label = label[:(self.max_sequence_length-2)]
         tokens = [self.vocab["word2idx"][self.start_token]]
         for t in label:
             try:

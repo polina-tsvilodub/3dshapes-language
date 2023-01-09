@@ -12,7 +12,16 @@ import os
 import numpy as np
 import argparse
 
-def main(path="data", run_inference=False, load_as_sandbox=True):
+def main(
+    path="data", 
+    run_inference=False, 
+    load_as_sandbox=True,
+    num_labels=1,
+    labels_type="long",
+    batch_size=1,
+    max_sequence_length=25,
+    vocab_file="vocab.pkl",
+    ):
     """
     Entry point for displaying example 3Dshapes images and ground truth captions,
     possibly with image captioner predictions.
@@ -25,11 +34,19 @@ def main(path="data", run_inference=False, load_as_sandbox=True):
         Flag indicating whether to run inference on the image captioner.
     load_as_sandbox: bool
         Flag indicating whether to load the snadboxed dataset from the repository, or download and package the full 3Dshapes dataset.
+    num_labels: int
+        Number of distinct captions to sample for each image. Relevant for using the dataloader for training models.
+    labels_type: str
+        "long" or "short". Indicates whether long or short captions should be used.
+    batch_size: int
+        Batch size. Has to be 1 in order to save the example image-caption pairs.
+    max_sequence_length: int
+        Length to which all captions are padded / truncated for training (full captions are displayed in the example png regardless of the setting).
+    vocab_file: str
+        Name of vocab file.
     """
 
     #### define inference parameters ####
-    # has to be 1 if we want to dump a figure with predicted captions, otherwise may be > 1
-    batch_size = 1
     # number of steps to run inference for
     num_batches = 10
     # name of trained model
@@ -42,7 +59,11 @@ def main(path="data", run_inference=False, load_as_sandbox=True):
     data_loader_test = get_loader(
         load_as_sandbox=load_as_sandbox,
         run_inference=run_inference,
-        num_labels=1,
+        num_labels=num_labels,
+        labels_type=labels_type,
+        batch_size=batch_size,
+        max_sequence_length=max_sequence_length,
+        vocab_file=vocab_file,
     )
 
     if torch.backends.mps.is_available():
@@ -161,14 +182,25 @@ if __name__ ==  "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-p", "--path", help = "path to directory with sandbox and / or full data", nargs = "?", default = "data")
-    parser.add_argument("-ri", "--run_inference", help = "flag whether to sample image captions from trained LSTM", action="store_true", default = False)
-    parser.add_argument("-s", "--load_as_sandbox", help = "flag whether to use the sandboxed data (using full dataset otherwise)", action="store_true", default = True)
+    parser.add_argument("-ri", "--run_inference", help = "flag whether to sample image captions from trained LSTM", action = "store_true", default = False)
+    parser.add_argument("-s", "--load_as_sandbox", help = "flag whether to use the sandboxed data (using full dataset otherwise)", action = "store_true", default = True)
+    parser.add_argument("-nl", "--num_labels", help = "number of captions per image to use for constructing the dataset (relevant for training as more captions increase the dataset size)", nargs = "?", default = 1, type = int)
+    parser.add_argument("-lt", "--labels_type", help = "choose whether long or short captions should be displayed", nargs = "?", default = "long", choices = ["long", "short"])
+    parser.add_argument("-b", "--batch_size", help = "batch size (has to be 1 for saving an example plot)", nargs = "?", default = 1, type = int)
+    parser.add_argument("-ms", "--max_sequence_length", help = "maximal sequence length to which all ground truth captions are padded / truncated for training", nargs = "?", default = 25, type = int)
+    parser.add_argument("-v", "--vocab_file", help = "name of vocab file", nargs = "?", default = "vocab.pkl", type = str)
     
+
     args = parser.parse_args()
 
     main(
         path=args.path, 
         run_inference=args.run_inference, 
         load_as_sandbox=args.load_as_sandbox,
+        num_labels=args.num_labels,
+        labels_type=args.labels_type,
+        batch_size=args.batch_size,
+        max_sequence_length=args.max_sequence_length,
+        vocab_file=args.vocab_file,
     )
     

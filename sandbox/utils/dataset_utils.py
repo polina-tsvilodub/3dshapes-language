@@ -91,7 +91,6 @@ class threeDshapes_Dataset(Dataset):
                 with open(os.path.join(path, "3dshapes_labels.npy"), "wb") as f:
                     np.save(f, labels_np)
 
-
         self.batch_size = batch_size
         with open(os.path.join(path, vocab_file), "rb") as vf:
             self.vocab = pickle.load(vf)
@@ -134,7 +133,7 @@ class threeDshapes_Dataset(Dataset):
         else:
             labels_ids_flat = [list(np.random.choice(range(len(self.labels_short[0])), num_labels, replace=False)) for i in range(len(self.images))]
             self.labels_flat = [self.labels_short[i][l] for i, sublst in enumerate(labels_ids_flat) for l in sublst]
-            self.img_ids_flat = [i for id in range(len(self.images)) for id in range(num_labels)]
+            self.img_ids_flat = [id for id in range(len(self.images)) for i in range(num_labels)]
        
         print("len labels ids flat ", len(labels_ids_flat))
         print("len labels flat ", len(self.labels_flat), self.labels_flat[:5])

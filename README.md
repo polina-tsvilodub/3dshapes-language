@@ -37,7 +37,7 @@ To run the evaluation, navigate to this directory and run `python pragmatic_eval
 
 ## `sandbox`
 
-This directory contains a sandbox version of the 3Dshapes dataset and the respective annotations (their creation is described above) which can be accessed directly in this repository. The sandbox contains 1000 images sampled at random from the full dataset. The IDs of the sampled images can be inspected in `sandbox/data/sandox_IDs_3dshapes_1000.txt`. Below, the subdirectories are documented in more detail.
+This directory contains a sandbox version of the 3Dshapes dataset and the respective annotations (their creation is described above) which can be accessed directly in this repository. The sandbox contains 1000 images sampled at random from the full dataset. The IDs of the sampled images can be inspected in `sandbox/data/sandox_IDs_3dshapes_1000.txt`. Below, the subdirectories are documented in more detail. The files with "_osf" in their name are tweaked versions used in the ACL attempt for evaluating / running the sandbox on pairs of images.
 
 The sandbox dataset is provided alongside with an entrypoint script `sandbox/img2text_inference.py` and a dataloader which allows for the following: 
 

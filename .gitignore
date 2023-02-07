@@ -2,3 +2,4 @@
 *.json
 *.png
 src/.ipynb_checkpoints/
+/data/

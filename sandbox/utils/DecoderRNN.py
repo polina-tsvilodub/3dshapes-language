@@ -173,7 +173,6 @@ class DecoderRNN(nn.Module):
                 cat_samples = cat_dist.sample()
                 entropy = cat_dist.entropy()
                 
-                # log_p = cat_dist.log_prob(cat_samples)
                 log_p = self.log_prob_helper(torch.log(1-probs), cat_samples)
             else: 
                 # if in eval mode, take argmax
@@ -185,8 +184,6 @@ class DecoderRNN(nn.Module):
                 
             entropies.append(entropy)
             output.append(cat_samples)
-            # cat_samples = torch.cat((cat_samples, cat_samples), dim=-1)
-            # print("Cat samples ", cat_samples)
             log_probs.append(log_p)
             
             

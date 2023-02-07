@@ -27,6 +27,14 @@ The note book contains code for:
 * testing embedding 3Dshapes images with a pretrained ResNet50 instance
 * exploring syntactic structure of the MS COCO dataset samples for comparison.
 
+## `pragmatic_evaluation`
+
+This directory contains the script which allows to evaluate pragmatic quality of image captions from the perspective of a referential task where the captions ought to be contrastive (i.e., set apart the target from the distractor), but not overinformative. The evaluation can be run on image pairs (i.e., one target and one distractor). 
+
+* `pragmatic_eval.py`: The script expects a csv file containing the columns "prediction", "target_id", "distractor_id" where the last two should contain numeric image IDs. It writes an evaluation file to a separate output file, appending the following columns with metrics reported in the paper and raw data used for their computation to the original dataframe: "binary_contrastiveness" (discriminativity), "relevance", "contrastive_efficiency", "is_<feature_name>" (indicator columns indicating whether the respective feature was mentioned in the prediction), "is_<feature_name>_disc" (indicator column indicating whether the respective feature was contrastive for the given pair, if it was mentioned), "num_nondiscriminative" (number of non-contrastive features mentioned in the prediction), "num_discriminative" (number of contrastive features mentioned in the prediction), "num_false" (number of features mentioned in the prediction which are false of the target), "num_mentioned_features" (total number of features mentioned in the prediction).
+Additionally, summary statistics are printed to the console.
+To run the evaluation, navigate to this directory and run `python pragmatic_eval.py -rf="results_file.csv" -o="output_file.csv"`, substituting the paths with your respective results file and desired output file location. If the full dataset location is different than the `data` directory described above, set the argument `-p=<you location>`
+
 ## `sandbox`
 
 This directory contains a sandbox version of the 3Dshapes dataset and the respective annotations (their creation is described above) which can be accessed directly in this repository. The sandbox contains 1000 images sampled at random from the full dataset. The IDs of the sampled images can be inspected in `sandbox/data/sandox_IDs_3dshapes_1000.txt`. Below, the subdirectories are documented in more detail.

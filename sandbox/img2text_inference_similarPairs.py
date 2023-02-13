@@ -3,7 +3,7 @@ Script for running inference on trained spekaer model, for testing purposes
 on the image captioners from the thesis.
 """
 import torch
-from utils.dataset_utils import get_loader
+from utils.dataset_utils_similarPairs import get_loader
 from utils.DecoderRNN import DecoderRNN
 import matplotlib.pyplot as plt
 import os
@@ -26,7 +26,7 @@ def main(
     id_file=None,
     features=None,
     pairs_file=None,
-    full_ds_path="../data",
+    full_ds_path="data",
     output_path="3dshapes_example.png",
 ):
     """
@@ -282,7 +282,7 @@ if __name__ ==  "__main__":
     parser.add_argument("-idf", "--id_file", help = "file containing image IDs to use for evaluation, e.g., test split of your dataset", nargs = "?", default = None, type = str)
     parser.add_argument("-ft", "--features", help = "list of features along which similar image pairs will be matched", nargs = "?", default = None, type = str)
     parser.add_argument("-pf", "--pairs_file", help = "path to file containing pairs indices", nargs = "?", default = None, type = str)
-    parser.add_argument("-fdp", "--full_ds_path", help = "path to directory containing data for loading the full dataset", nargs = "?", default = "../data", type = str)
+    parser.add_argument("-fdp", "--full_ds_path", help = "path to directory containing data for loading the full dataset", nargs = "?", default = "data", type = str)
     parser.add_argument("-o", "--output_name", help="name for file where example images with captions will be saved to (if batch size 1)", nargs="?", default = "3dshapes_example.png", type = str)
 
     args = parser.parse_args()

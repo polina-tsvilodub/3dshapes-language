@@ -67,7 +67,7 @@ class threeDshapes_Dataset(Dataset):
             pairs="none", 
             id_file=None,
             features=None,
-            full_ds_path="../data",
+            full_ds_path="data",
         ):
 
         # check vocab file exists
@@ -396,7 +396,7 @@ def get_loader(
     pairs="none", 
     id_file=None,
     features=None,
-    full_ds_path="../data",
+    full_ds_path="data",
 ):
     """
     Returns the data loader.

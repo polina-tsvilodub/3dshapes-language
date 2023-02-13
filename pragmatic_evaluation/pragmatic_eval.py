@@ -233,7 +233,7 @@ if __name__ ==  "__main__":
     # read in cmd args
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-p", "--path", help = "path to directory with sandbox and / or full data", nargs = "?", default = "../data")
+    parser.add_argument("-p", "--path", help = "path to directory with sandbox and / or full data", nargs = "?", default = "../sandbox/data")
     parser.add_argument("-rf", "--results_file", help = "path to file containing predictions and pairs ids to be evaluated", type = str)
     parser.add_argument("-o", "--output_path", help = "path where to write output results to", nargs = "?", default = "pragmatic_eval_results.csv", type = str)
     

@@ -69,6 +69,7 @@ def compute_pragmatic_scores(
     num_n_list = []
     num_d_list = []
     num_f_list = []
+    num_f_dist_list = []
     shape_color_mentioned = 0
 
     for i, r in tqdm(df.iterrows()):
@@ -85,7 +86,9 @@ def compute_pragmatic_scores(
 
         # construct all sentences for filtering all mentioned features
         ground_truth_expressions = []
+        ground_truth_expressions_dist = []
         target_shape = feature_terminals["shape"][target_num_label[4]][0].split(" -> ")[-1].replace("'", "")
+        distractor_shape = feature_terminals["shape"][dist_num_label[4]][0].split(" -> ")[-1].replace("'", "")
         colors_list = ["red", "orange", "yellow", "green", "cyan", "blue", "purple", "pink"]
         sizes_list = ["tiny", "small", "medium", "middle sized", "big", "large", "huge", "giant"]
 
@@ -111,6 +114,29 @@ def compute_pragmatic_scores(
                 ground_truth_expressions.append(nl_expr)
             else:
                 ground_truth_expressions.append(nl_phrase.replace("in the ", "").replace("on the ", ""))
+
+            # do the same procedure for identifying distractor ground truth expressions for checking if any generated expressions which are false of target
+            # are true of distractor
+            dist_val = dist_num_label[ind]
+            # retrieve annotation
+            dist_terminals = feature_terminals[name][dist_val]
+            dist_nl_expr = dist_terminals[0].split(" -> ")[-1].replace("'", "")
+            # get head noun for color
+            dist_head_noun = name.split("_")[0]
+            if dist_head_noun == "object":
+                # retrieve NL label for the shape
+                dist_head_noun = distractor_shape
+                
+            elif dist_head_noun == "orientation" or dist_head_noun == "scale" or dist_head_noun == "shape":
+                dist_head_noun = ""
+            dist_nl_phrase = dist_nl_expr + " " + dist_head_noun
+            dist_nl_phrase = dist_nl_phrase.strip()
+        
+            # check if respective value is unique and we can also consider the unigram (specific to colors, the others are unigrams anyways)
+            if dist_head_noun != "orientation" and dist_num_label[:3].tolist().count(dist_val) == 1:
+                ground_truth_expressions_dist.append(dist_nl_expr)
+            else:
+                ground_truth_expressions_dist.append(dist_nl_phrase.replace("in the ", "").replace("on the ", "")) 
             
         contrastive_expressions = [ground_truth_expressions[e] for e in contrastive_features_inds]
     
@@ -147,18 +173,24 @@ def compute_pragmatic_scores(
         
         # retrieve constituents containing nouns (shape, floor, wall, orientation related descriptions)
         heads_tokens = dep_parse_table[(dep_parse_table["tag"] == "NN") | (dep_parse_table["tag"] == "JJ")]["token"].tolist()
+       
         # print("head tokens ", heads_tokens)
         heads_tags = dep_parse_table[(dep_parse_table["tag"] == "NN") | (dep_parse_table["tag"] == "JJ")]["tag"].tolist()
         ngrams = [dep_parse_table[dep_parse_table["dep"] == "ROOT"]["token"].tolist()[0]] 
         num_false_features = 0
         false_toks = []
+        false_toks_true_dist = []
+        num_false_toks_true_dist = 0
         for n in heads_tokens:
             if n not in ["picture", "front", "wall", "floor", "unk", "pad", "standing", "a", "on", "in", "the", "of"] and n not in " ".join(ground_truth_expressions):
                 num_false_features += 1
                 false_toks.append(n)
-            
+                if n in " ".join(ground_truth_expressions_dist):
+                    num_false_toks_true_dist += 1
+                    false_toks_true_dist.append(n)
+        
         num_f_list.append(num_false_features)
-
+        num_f_dist_list.append(num_false_toks_true_dist)
 
         # to account for non-discriminative features, check for each ground truth expression if it occurs in the prediction  
         produced_features = [f for f in ground_truth_expressions if f in r["prediction"]]
@@ -169,6 +201,12 @@ def compute_pragmatic_scores(
         orientation_mentions.append(1 if any([n in r["prediction"] for n in ["middle", "corner", "left", "right"] ]) else 0)
         shape_mentions.append(1 if any([target_shape in r["prediction"]]) else 0)
         scale_mentions.append(1 if any([a in r["prediction"] for a in sizes_list]) else 0)
+
+        # check if any produced non-contrastive features are true of the distractor
+        # produced_non_contrasts = list(set(produced_features) - set(produced_contrasts))
+        # produced 
+        # for nc in produced_non_contrasts:
+
         # if no contrastive color was produced, check if it was produced redundantly, either only the adj (if color value unique)
         # or if it cooccurred with the shape
         if shape_color_mentioned == 0:
@@ -214,6 +252,7 @@ def compute_pragmatic_scores(
         "num_nondiscriminative": num_n_list,
         "num_discriminative": num_d_list,
         "num_false": num_f_list,
+        "num_false_true_of_dist": num_f_dist_list,
     })
     df_out.to_csv(output_path)
 
@@ -224,6 +263,7 @@ def compute_pragmatic_scores(
     print("--- Average number of contrastive features mentioned:                " , df_out["num_discriminative"].mean())
     print("--- Average number of non-contrastive features mentioned:            ", df_out["num_nondiscriminative"].mean())
     print("--- Average number of false features mentioned:                      ", df_out["num_false"].mean())
+    print("--- Average number of false features true of distractor mentioned:   ", df_out["num_false_true_of_dist"].mean())
     print("--- Average discriminativity:                                        ", df_out["binary_contrastiveness"].mean())
     print("--- Average contrastive efficiency:                                  ", df_out["contrastive_efficiency"].mean())
     print("--- Average relevance:                                               ", df_out["relevance"].mean())

@@ -140,6 +140,16 @@ def compute_pragmatic_scores(
             
         contrastive_expressions = [ground_truth_expressions[e] for e in contrastive_features_inds]
     
+        # compute dependency parse for checking if the shape hue was mentioned (as one phrase)
+        dep_parse = nlp(r["prediction"])
+        dep_parse_table = pd.DataFrame({
+            "token": [t.text for t in dep_parse],
+            "tag": [t.tag_ for t in dep_parse],
+            "head": [t.head.text for t in dep_parse],
+            "dep": [t.dep_ for t in dep_parse],
+        })
+        modifiers = dep_parse_table[(dep_parse_table["dep"] == "acomp") | (dep_parse_table["dep"] == "amod") | (dep_parse_table["dep"] == "attr")]["token"].values
+    
         # check presence of contrastive expressions in the generated caption
         num_produced_contrasts = 0
         produced_contrasts = []
@@ -151,6 +161,30 @@ def compute_pragmatic_scores(
                 produced_contrastive_inds.append(contrastive_features_inds[j])
                 if contrastive_features_inds[j] == 2:
                     shape_color_mentioned = 1
+                # also check if contrastive features were produced predicatively in case they don't occur literally
+                if e not in produced_contrasts:
+                    if e in modifiers:
+                        # check that the modified noun is the correct one
+                        mod_head = dep_parse_table[dep_parse_table["token"] == e]["head"].values[0]
+                        # define correct head noun 
+                        if contrastive_features_inds[j] == 0:
+                            h_n = "wall"
+                        elif contrastive_features_inds[j] == 1:
+                            h_n = "floor"
+                        elif contrastive_features_inds[j] in [2, 3, 4]:
+                            h_n = target_shape
+                        else:
+                            h_n = "orientation"
+                        
+                        # check that wither the head noun is the correct one
+                        # or the head is a verb and the sentence subject is the correct noun
+                        if (mod_head == h_n) or\
+                            (any(["VB" in r for r in dep_parse_table[dep_parse_table["token"] == mod_head]["tag"].values]) and
+                            any([r  == "nsubj" for r in dep_parse_table[dep_parse_table["token"] == h_n]["dep"].values]) ):
+                            num_produced_contrasts += 1
+                            produced_contrasts.append(e)
+                            produced_contrastive_inds.append(contrastive_features_inds[j])
+
         # print("Number of produced contrastive exprs ", num_produced_contrasts)
         num_d_list.append(num_produced_contrasts)
         
@@ -162,19 +196,10 @@ def compute_pragmatic_scores(
         shape_mentions_c.append(1 if 4 in produced_contrastive_inds else 0)
         orientation_mentions_c.append(1 if 5 in produced_contrastive_inds else 0)
 
-        # compute dependency parse for checking if the shape hue was mentioned (as one phrase)
-        dep_parse = nlp(r["prediction"])
-        dep_parse_table = pd.DataFrame({
-            "token": [t.text for t in dep_parse],
-            "tag": [t.tag_ for t in dep_parse],
-            "head": [t.head.text for t in dep_parse],
-            "dep": [t.dep_ for t in dep_parse],
-        })
         
         # retrieve constituents containing nouns (shape, floor, wall, orientation related descriptions)
         heads_tokens = dep_parse_table[(dep_parse_table["tag"] == "NN") | (dep_parse_table["tag"] == "JJ")]["token"].tolist()
        
-        # print("head tokens ", heads_tokens)
         heads_tags = dep_parse_table[(dep_parse_table["tag"] == "NN") | (dep_parse_table["tag"] == "JJ")]["tag"].tolist()
         ngrams = [dep_parse_table[dep_parse_table["dep"] == "ROOT"]["token"].tolist()[0]] 
         num_false_features = 0
@@ -202,10 +227,6 @@ def compute_pragmatic_scores(
         shape_mentions.append(1 if any([target_shape in r["prediction"]]) else 0)
         scale_mentions.append(1 if any([a in r["prediction"] for a in sizes_list]) else 0)
 
-        # check if any produced non-contrastive features are true of the distractor
-        # produced_non_contrasts = list(set(produced_features) - set(produced_contrasts))
-        # produced 
-        # for nc in produced_non_contrasts:
 
         # if no contrastive color was produced, check if it was produced redundantly, either only the adj (if color value unique)
         # or if it cooccurred with the shape
@@ -228,6 +249,7 @@ def compute_pragmatic_scores(
 
 
         relevance_scores.append(1-(len(produced_features) - num_produced_contrasts) / (6 - num_contrastive_descriptions))
+
 
     df_out = pd.DataFrame({
         "target_id": df["target_id"],
